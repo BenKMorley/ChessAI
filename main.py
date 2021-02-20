@@ -11,7 +11,7 @@ import matplotlib as mpl
 class Chessboard(object):
   def __init__(self):
     # Make a chessboard base
-    self.board = numpy.ones((8, 8)) - (numpy.indices((8, 8))[0] + numpy.indices((8, 8))[1]) % 2
+    self.board = (numpy.ones((8, 8)) - (numpy.indices((8, 8))[0] + numpy.indices((8, 8))[1]) + 1) % 2
 
     self.black_color = numpy.array([130 / 256, 90 / 256, 80 / 256, 1])
     self.white_color = numpy.array([245 / 256, 245 / 256, 220 / 256, 1])
@@ -50,64 +50,64 @@ class Chessboard(object):
     # 0 indexes white and 1 indexes black
     # Note I use the convention whereby the array printed is in the same layout
     # as the chessboard
-    self.white_pieces['pawn'] = numpy.zeros((8, 8))
-    self.white_pieces['pawn'][6, :] = numpy.ones(8)
+    self.white_pieces['white pawn'] = numpy.zeros((8, 8))
+    self.white_pieces['white pawn'][6, :] = numpy.ones(8)
     self.piece_names[6, :] = "white pawn"
 
-    self.black_pieces['pawn'] = numpy.zeros((8, 8))
-    self.black_pieces['pawn'][1, :] = numpy.ones(8)
+    self.black_pieces['black pawn'] = numpy.zeros((8, 8))
+    self.black_pieces['black pawn'][1, :] = numpy.ones(8)
     self.piece_names[1, :] = "black pawn"
 
-    self.white_pieces['rook'] = numpy.zeros((8, 8))
-    self.white_pieces['rook'][7, 0] = 1
-    self.white_pieces['rook'][7, 7] = 1
+    self.white_pieces['white rook'] = numpy.zeros((8, 8))
+    self.white_pieces['white rook'][7, 0] = 1
+    self.white_pieces['white rook'][7, 7] = 1
     self.piece_names[7, 0] = "white rook"
     self.piece_names[7, 7] = "white rook"
 
-    self.black_pieces['rook'] = numpy.zeros((8, 8))
-    self.black_pieces['rook'][0, 0] = 1
-    self.black_pieces['rook'][0, 7] = 1
+    self.black_pieces['black rook'] = numpy.zeros((8, 8))
+    self.black_pieces['black rook'][0, 0] = 1
+    self.black_pieces['black rook'][0, 7] = 1
     self.piece_names[0, 0] = "black rook"
     self.piece_names[0, 7] = "black rook"
 
-    self.white_pieces['bishop'] = numpy.zeros((8, 8))
-    self.white_pieces['bishop'][7, 2] = 1
-    self.white_pieces['bishop'][7, 5] = 1
+    self.white_pieces['white bishop'] = numpy.zeros((8, 8))
+    self.white_pieces['white bishop'][7, 2] = 1
+    self.white_pieces['white bishop'][7, 5] = 1
     self.piece_names[7, 2] = "white bishop"
     self.piece_names[7, 5] = "white bishop"
 
-    self.black_pieces['bishop'] = numpy.zeros((8, 8))
-    self.black_pieces['bishop'][0, 2] = 1
-    self.black_pieces['bishop'][0, 5] = 1
+    self.black_pieces['black bishop'] = numpy.zeros((8, 8))
+    self.black_pieces['black bishop'][0, 2] = 1
+    self.black_pieces['black bishop'][0, 5] = 1
     self.piece_names[0, 2] = "black bishop"
     self.piece_names[0, 5] = "black bishop"
 
-    self.white_pieces['knight'] = numpy.zeros((8, 8))
-    self.white_pieces['knight'][7, 1] = 1
-    self.white_pieces['knight'][7, 6] = 1
+    self.white_pieces['white knight'] = numpy.zeros((8, 8))
+    self.white_pieces['white knight'][7, 1] = 1
+    self.white_pieces['white knight'][7, 6] = 1
     self.piece_names[7, 1] = "white knight"
     self.piece_names[7, 6] = "white knight"
 
-    self.black_pieces['knight'] = numpy.zeros((8, 8))
-    self.black_pieces['knight'][0, 1] = 1
-    self.black_pieces['knight'][0, 6] = 1
+    self.black_pieces['black knight'] = numpy.zeros((8, 8))
+    self.black_pieces['black knight'][0, 1] = 1
+    self.black_pieces['black knight'][0, 6] = 1
     self.piece_names[0, 1] = "black knight"
     self.piece_names[0, 6] = "black knight"
    
-    self.white_pieces['king'] = numpy.zeros((8, 8))
-    self.white_pieces['king'][7, 4] = 1
+    self.white_pieces['white king'] = numpy.zeros((8, 8))
+    self.white_pieces['white king'][7, 4] = 1
     self.piece_names[7, 4] = "white king"
 
-    self.black_pieces['king'] = numpy.zeros((8, 8))
-    self.black_pieces['king'][0, 4] = 1
+    self.black_pieces['black king'] = numpy.zeros((8, 8))
+    self.black_pieces['black king'][0, 4] = 1
     self.piece_names[0, 4] = "black king"
 
-    self.white_pieces['queen'] = numpy.zeros((8, 8))
-    self.white_pieces['queen'][7, 3] = 1
+    self.white_pieces['white queen'] = numpy.zeros((8, 8))
+    self.white_pieces['white queen'][7, 3] = 1
     self.piece_names[7, 3] = "white queen"
 
-    self.black_pieces['queen'] = numpy.zeros((8, 8))
-    self.black_pieces['queen'][0, 3] = 1
+    self.black_pieces['black queen'] = numpy.zeros((8, 8))
+    self.black_pieces['black queen'][0, 3] = 1
     self.piece_names[0, 3] = "black queen"
 
   def find_all_moves(self):
@@ -126,10 +126,28 @@ class Chessboard(object):
               self.possible_moves[i][j][(i - 1, j)] = "white pawn"
 
   def move(self, start, finish):
-    for artist in self.artists[tuple(start)]:
-      artist._center = finish
+    start = tuple(start)
+    finish = tuple(finish)
+    for artist in self.artists[start]:
+      artist._center = [finish[1], 7 - finish[0]]
 
     plt.draw()
+
+    # Update piece position
+    name = self.piece_names[start]
+    self.piece_names[start] = ''
+    self.piece_names[finish] = name
+
+    color = name[0:5]
+    if color == 'white':
+      self.white_pieces[name][start] = 0
+      self.white_pieces[name][finish] = 1
+    
+    else:
+      self.black_pieces[name][start] = 0
+      self.black_pieces[name][finish] = 1
+
+    pdb.set_trace()
 
   def onclick(self, event):
     print("Click detected")
@@ -174,7 +192,7 @@ class Chessboard(object):
 
     # Using the convention for piece[x, y] same as previously
     x = int(numpy.rint(event.y - self.bottom_left[1])) * 8 // int(numpy.rint(self.top_right[1] - self.bottom_left[1]))
-    y = int(numpy.rint(event.x - self.bottom_left[0])) * 8 // int(numpy.rint(self.top_right[0] - self.bottom_left[0]))
+    y = 7 - int(numpy.rint(event.x - self.bottom_left[0])) * 8 // int(numpy.rint(self.top_right[0] - self.bottom_left[0]))
 
     print(self.piece_names[x, y])
 
@@ -184,8 +202,7 @@ class Chessboard(object):
     # Check if someone has selected a selected move
     if (x, y) in self.select_moves:
       artist, origin = self.select_moves[(x, y)]
-      # pdb.set_trace()
-      self.move(origin, [7 - y, 7 - x])
+      self.move(origin, [x, y])
 
     # Remove any previous clicks
     for movement in self.select_moves:
@@ -195,7 +212,7 @@ class Chessboard(object):
     self.select_moves = {}
     for move in moves.keys():
       if moves[move] == "white pawn":
-        self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([7 - move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
+        self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
 
     plt.draw()
 
@@ -236,42 +253,42 @@ class Chessboard(object):
 
     for i in range(8):
       for j in range(8):
-        if self.white_pieces['pawn'][i, j] == 1:
-          self.artists[i, j] = [ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='w')),
-          ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
+        if self.white_pieces['white pawn'][i, j] == 1:
+          self.artists[i, j] = [ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='w')),
+          ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
 
-        if self.black_pieces['pawn'][i, j] == 1:
-          ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='k'))
+        if self.black_pieces['black pawn'][i, j] == 1:
+          ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k'))
 
-        if self.white_pieces['rook'][i, j] == 1:
-          rook_collections[0].append(Rectangle(((7 - j) - 0.3, (7 - i) - 0.3), 0.6, 0.6, linewidth=0.3))
+        if self.white_pieces['white rook'][i, j] == 1:
+          rook_collections[0].append(Rectangle(((j) - 0.3, (7 - i) - 0.3), 0.6, 0.6, linewidth=0.3))
 
-        if self.black_pieces['rook'][i, j] == 1:
-          rook_collections[1].append(Rectangle(((7 - j) - 0.3, (7 - i) - 0.3), 0.6, 0.6))
+        if self.black_pieces['black rook'][i, j] == 1:
+          rook_collections[1].append(Rectangle(((j) - 0.3, (7 - i) - 0.3), 0.6, 0.6))
         
-        if self.white_pieces['bishop'][i, j] == 1:
-          bishop_collections[0].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
+        if self.white_pieces['white bishop'][i, j] == 1:
+          bishop_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
 
-        if self.black_pieces['bishop'][i, j] == 1:
-          bishop_collections[1].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
+        if self.black_pieces['black bishop'][i, j] == 1:
+          bishop_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
 
-        if self.white_pieces['knight'][i, j] == 1:
-          knight_collections[0].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
+        if self.white_pieces['white knight'][i, j] == 1:
+          knight_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
         
-        if self.black_pieces['knight'][i, j] == 1:
-          knight_collections[1].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
+        if self.black_pieces['black knight'][i, j] == 1:
+          knight_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
         
-        if self.white_pieces['king'][i, j] == 1:
-          king_collections[0].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in king_shape])))
+        if self.white_pieces['white king'][i, j] == 1:
+          king_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in king_shape])))
         
-        if self.black_pieces['king'][i, j] == 1:
-          king_collections[1].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in king_shape])))
+        if self.black_pieces['black king'][i, j] == 1:
+          king_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in king_shape])))
         
-        if self.white_pieces['queen'][i, j] == 1:
-          queen_collections[0].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
+        if self.white_pieces['white queen'][i, j] == 1:
+          queen_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
         
-        if self.black_pieces['queen'][i, j] == 1:
-          queen_collections[1].append(Polygon(numpy.array([[(7 - j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
+        if self.black_pieces['black queen'][i, j] == 1:
+          queen_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
 
     ax.add_collection(PatchCollection(rook_collections[0], facecolor='w', edgecolor='k', linewidths=2))
     ax.add_collection(PatchCollection(rook_collections[1], facecolor='k'))
