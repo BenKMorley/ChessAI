@@ -16,6 +16,9 @@ class Chessboard(object):
     self.black_color = numpy.array([130 / 256, 90 / 256, 80 / 256, 1])
     self.white_color = numpy.array([245 / 256, 245 / 256, 220 / 256, 1])
 
+    # For keeping track of the pieces on the plot
+    self.artists = {}
+
     # Define an array containing the names of all of the pieces
     self.piece_names = numpy.full((8, 8), "", dtype='<U20')
 
@@ -38,7 +41,7 @@ class Chessboard(object):
     self.calibrated_top_right = True
     self.top_right = [146, 52]
     self.about_to_cal_top_right = False
-    self.to_hide = []
+    self.select_moves = []
 
     # Add a piece dictionary
     self.white_pieces = {}
@@ -122,6 +125,12 @@ class Chessboard(object):
             else:
               self.possible_moves[i][j][(i - 1, j)] = "white pawn"
 
+  def move(self, start, finish):
+    for artist in self.artists[tuple(start)]:
+      artist._center = finish
+
+    plt.draw()
+
   def onclick(self, event):
     print("Click detected")
 
@@ -172,14 +181,21 @@ class Chessboard(object):
     # Check for possible moves from this position
     moves = self.possible_moves[x, y]
 
+    # Check if someone has selected a selected move
+    if (x, y) in self.select_moves:
+      artist, origin = self.select_moves[(x, y)]
+      # pdb.set_trace()
+      self.move(origin, [7 - y, 7 - x])
+
     # Remove any previous clicks
-    for artist in self.to_hide:
+    for movement in self.select_moves:
+      artist, origin = self.select_moves[movement]
       artist.remove()
 
-    self.to_hide = []
+    self.select_moves = {}
     for move in moves.keys():
       if moves[move] == "white pawn":
-        self.to_hide.append(self.ax.add_artist(plt.Circle([7 - move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')))
+        self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([7 - move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
 
     plt.draw()
 
@@ -221,8 +237,8 @@ class Chessboard(object):
     for i in range(8):
       for j in range(8):
         if self.white_pieces['pawn'][i, j] == 1:
-          ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='w'))
-          ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))
+          self.artists[i, j] = [ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='w')),
+          ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
 
         if self.black_pieces['pawn'][i, j] == 1:
           ax.add_artist(plt.Circle([7 - j, 7 - i], radius=0.3, zorder=1, color='k'))
