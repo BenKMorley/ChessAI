@@ -41,7 +41,7 @@ class Chessboard(object):
     self.calibrated_top_right = True
     self.top_right = [146, 52]
     self.about_to_cal_top_right = False
-    self.select_moves = []
+    self.select_moves = {}
 
     # Add a piece dictionary
     self.white_pieces = {}
@@ -122,15 +122,28 @@ class Chessboard(object):
               self.possible_moves[i][j][(0, j)] = "white rook"
               self.possible_moves[i][j][(0, j)] = "white knight"
 
+            # Check if both spaces are available to move
+            elif i == 6:
+              self.possible_moves[i][j][(i - 1, j)] = "white pawn"
+              if self.piece_names[i - 2, j] == "":
+                self.possible_moves[i][j][(i - 2, j)] = "white pawn"
+
             else:
               self.possible_moves[i][j][(i - 1, j)] = "white pawn"
-
+          
   def move(self, start, finish):
     start = tuple(start)
     finish = tuple(finish)
+
+    self.artists[finish] = []
+
     for artist in self.artists[start]:
       artist._center = [finish[1], 7 - finish[0]]
 
+      self.artists[finish].append(artist)
+
+    del self.artists[start]
+    
     plt.draw()
 
     # Update piece position
@@ -147,7 +160,7 @@ class Chessboard(object):
       self.black_pieces[name][start] = 0
       self.black_pieces[name][finish] = 1
 
-    pdb.set_trace()
+    self.find_all_moves()
 
   def onclick(self, event):
     print("Click detected")
@@ -198,21 +211,25 @@ class Chessboard(object):
 
     # Check for possible moves from this position
     moves = self.possible_moves[x, y]
+    flag = False
 
     # Check if someone has selected a selected move
     if (x, y) in self.select_moves:
       artist, origin = self.select_moves[(x, y)]
       self.move(origin, [x, y])
+      flag = True
 
     # Remove any previous clicks
-    for movement in self.select_moves:
+    for movement in [key for key in self.select_moves.keys()]:
       artist, origin = self.select_moves[movement]
+      del self.select_moves[movement]
       artist.remove()
 
-    self.select_moves = {}
-    for move in moves.keys():
-      if moves[move] == "white pawn":
-        self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
+    if not flag:
+      self.select_moves = {}
+      for move in moves.keys():
+        if moves[move] == "white pawn":
+          self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
 
     plt.draw()
 
