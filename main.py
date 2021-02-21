@@ -19,6 +19,9 @@ class Chessboard(object):
 
     # For keeping track of the pieces on the plot
     self.artists = {}
+    for i in range(8):
+      for j in range(8):
+        self.artists[i, j] = []
 
     # Define an array containing the names of all of the pieces
     self.piece_names = numpy.full((8, 8), "", dtype='<U20')
@@ -122,7 +125,20 @@ class Chessboard(object):
     finish = tuple(finish)
     # pdb.set_trace()
 
-    self.artists[finish] = []
+    # Check if a piece has been captured
+    color = self.piece_names[start][0:5]
+
+    if self.piece_names[finish] != "":
+      if color == "white":
+        self.black_pieces[self.piece_names[finish]] = 0
+         
+      if color == "black":
+        self.white_pieces[self.piece_names[finish]] = 0
+
+      for artist in self.artists[finish]:
+        artist.remove()
+
+      self.artists[finish] = []
 
     for artist in self.artists[start]:
       artist._center = [finish[1], 7 - finish[0]]
@@ -130,6 +146,7 @@ class Chessboard(object):
       self.artists[finish].append(artist)
 
     del self.artists[start]
+
 
     plt.draw()
 
