@@ -44,7 +44,6 @@ pip_library(
 
 python_library(
     name = "matplotlib",
-    srcs = [],
     deps = [
         ":matplotlib_isolated",
         ":numpy",
