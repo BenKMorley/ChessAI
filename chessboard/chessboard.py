@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle, Polygon
 from matplotlib.collections import PatchCollection
 import pdb
 import matplotlib as mpl
-from pieces import plot_piece, piece_moves
+from chessboard.pieces import plot_piece, piece_moves
 
 
 class Chessboard(object):
@@ -273,8 +273,3 @@ class Chessboard(object):
     print("Got clicks")
 
     plt.show()
-
-
-a = Chessboard()
-a.find_all_moves()
-a.plot(a.onclick)
