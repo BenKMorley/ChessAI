@@ -6,6 +6,7 @@ from matplotlib.patches import Rectangle, Polygon
 from matplotlib.collections import PatchCollection
 import pdb
 import matplotlib as mpl
+from pieces import plot_piece
 
 
 class Chessboard(object):
@@ -113,6 +114,9 @@ class Chessboard(object):
   def find_all_moves(self):
     for i in range(8):
       for j in range(8):
+        # Remove previously stored moves
+        self.possible_moves[i, j] = {}
+
         if self.piece_names[i, j] == "white pawn":
           if self.piece_names[i - 1, j] == "":
             # In this case the pawn is in the position for promotion
@@ -143,7 +147,7 @@ class Chessboard(object):
       self.artists[finish].append(artist)
 
     del self.artists[start]
-    
+
     plt.draw()
 
     # Update piece position
@@ -159,8 +163,6 @@ class Chessboard(object):
     else:
       self.black_pieces[name][start] = 0
       self.black_pieces[name][finish] = 1
-
-    self.find_all_moves()
 
   def onclick(self, event):
     print("Click detected")
@@ -228,8 +230,7 @@ class Chessboard(object):
     if not flag:
       self.select_moves = {}
       for move in moves.keys():
-        if moves[move] == "white pawn":
-          self.select_moves[move[0], move[1]] = [self.ax.add_artist(plt.Circle([move[1], 7 - move[0]], radius=0.3, zorder=1, color='r')), [x, y]]
+          self.select_moves[move[0], move[1]] = [plot_piece('possible move', [move[0], move[1]], self.ax, ), [x, y]]
 
     plt.draw()
 
@@ -255,70 +256,11 @@ class Chessboard(object):
     plt.xlim(-0.5, 7.5)
     plt.ylim(-0.5, 7.5)
 
-    rook_collections = [[], []]
-    bishop_collections = [[], []]
-    knight_collections = [[], []]
-    king_collections = [[], []]
-    queen_collections = [[], []]
-
-    # Construct the piece's polygon arrays
-    bishop_shape = [[0, -0.35], [-0.35, 0], [0, 0.35], [0.35, 0]]
-    knight_shape = [[-0.25, 0.35], [0.25, 0.15], [0.25, -0.35], [-0.25, -0.35]]
-    king_shape = [[-0.15, -0.4], [-0.15, -0.15], [-0.4, -0.15], [-0.4, 0.15], [-0.15, 0.15], [-0.15, 0.4],
-                  [0.15, 0.4], [0.15, 0.15], [0.4, 0.15], [0.4, -0.15], [0.15, -0.15], [0.15, -0.4]]
-    queen_shape = [[-0.25, -0.35], [-0.4, 0.05], [0, 0.35], [0.4, 0.05], [0.25, -0.35]]
-
     for i in range(8):
       for j in range(8):
-        if self.white_pieces['white pawn'][i, j] == 1:
-          self.artists[i, j] = [ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='w')),
-          ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
+        if self.piece_names[i, j] != '':
+          self.artists[i, j] = plot_piece(self.piece_names[i, j], [i, j], ax)
 
-        if self.black_pieces['black pawn'][i, j] == 1:
-          ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k'))
-
-        if self.white_pieces['white rook'][i, j] == 1:
-          rook_collections[0].append(Rectangle(((j) - 0.3, (7 - i) - 0.3), 0.6, 0.6, linewidth=0.3))
-
-        if self.black_pieces['black rook'][i, j] == 1:
-          rook_collections[1].append(Rectangle(((j) - 0.3, (7 - i) - 0.3), 0.6, 0.6))
-        
-        if self.white_pieces['white bishop'][i, j] == 1:
-          bishop_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
-
-        if self.black_pieces['black bishop'][i, j] == 1:
-          bishop_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in bishop_shape])))
-
-        if self.white_pieces['white knight'][i, j] == 1:
-          knight_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
-        
-        if self.black_pieces['black knight'][i, j] == 1:
-          knight_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in knight_shape])))
-        
-        if self.white_pieces['white king'][i, j] == 1:
-          king_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in king_shape])))
-        
-        if self.black_pieces['black king'][i, j] == 1:
-          king_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in king_shape])))
-        
-        if self.white_pieces['white queen'][i, j] == 1:
-          queen_collections[0].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
-        
-        if self.black_pieces['black queen'][i, j] == 1:
-          queen_collections[1].append(Polygon(numpy.array([[(j) + k[0], (7 - i) + k[1]] for k in queen_shape])))
-
-    ax.add_collection(PatchCollection(rook_collections[0], facecolor='w', edgecolor='k', linewidths=2))
-    ax.add_collection(PatchCollection(rook_collections[1], facecolor='k'))
-    ax.add_collection(PatchCollection(bishop_collections[0], facecolor='w', edgecolor='k', linewidths=2))
-    ax.add_collection(PatchCollection(bishop_collections[1], facecolor='k'))
-    ax.add_collection(PatchCollection(knight_collections[0], facecolor='w', edgecolor='k', linewidths=2))
-    ax.add_collection(PatchCollection(knight_collections[1], facecolor='k'))
-    ax.add_collection(PatchCollection(king_collections[0], facecolor='w', edgecolor='k', linewidths=2))
-    ax.add_collection(PatchCollection(king_collections[1], facecolor='k'))
-    ax.add_collection(PatchCollection(queen_collections[0], facecolor='w', edgecolor='k', linewidths=2))
-    ax.add_collection(PatchCollection(queen_collections[1], facecolor='k'))
-
-    x = Rectangle((0, 0), 8, 8, color='r')
     fig = plt.gcf()
 
     print("Waiting for clicks")
@@ -326,8 +268,6 @@ class Chessboard(object):
     print("Got clicks")
 
     plt.show()
-
-    # [[0.125, 0.10999999999999999], [0.9, 0.88]]
 
 
 a = Chessboard()
