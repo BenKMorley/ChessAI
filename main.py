@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle, Polygon
 from matplotlib.collections import PatchCollection
 import pdb
 import matplotlib as mpl
-from pieces import plot_piece
+from pieces import plot_piece, piece_moves
 
 
 class Chessboard(object):
@@ -115,29 +115,12 @@ class Chessboard(object):
     for i in range(8):
       for j in range(8):
         # Remove previously stored moves
-        self.possible_moves[i, j] = {}
+        self.possible_moves[i, j] = piece_moves(self.piece_names[i, j], [i, j], self.piece_names)
 
-        if self.piece_names[i, j] == "white pawn":
-          if self.piece_names[i - 1, j] == "":
-            # In this case the pawn is in the position for promotion
-            if i == 1:
-              self.possible_moves[i][j][(0, j)] = "white queen"
-              self.possible_moves[i][j][(0, j)] = "white bishop"
-              self.possible_moves[i][j][(0, j)] = "white rook"
-              self.possible_moves[i][j][(0, j)] = "white knight"
-
-            # Check if both spaces are available to move
-            elif i == 6:
-              self.possible_moves[i][j][(i - 1, j)] = "white pawn"
-              if self.piece_names[i - 2, j] == "":
-                self.possible_moves[i][j][(i - 2, j)] = "white pawn"
-
-            else:
-              self.possible_moves[i][j][(i - 1, j)] = "white pawn"
-          
   def move(self, start, finish):
     start = tuple(start)
     finish = tuple(finish)
+    # pdb.set_trace()
 
     self.artists[finish] = []
 
@@ -163,6 +146,8 @@ class Chessboard(object):
     else:
       self.black_pieces[name][start] = 0
       self.black_pieces[name][finish] = 1
+    
+    self.find_all_moves()
 
   def onclick(self, event):
     print("Click detected")
@@ -211,6 +196,8 @@ class Chessboard(object):
 
     print(self.piece_names[x, y])
 
+    # pdb.set_trace()
+
     # Check for possible moves from this position
     moves = self.possible_moves[x, y]
     flag = False
@@ -232,6 +219,7 @@ class Chessboard(object):
       for move in moves.keys():
           self.select_moves[move[0], move[1]] = [plot_piece('possible move', [move[0], move[1]], self.ax, ), [x, y]]
 
+    # pdb.set_trace()
     plt.draw()
 
   def plot(self, onclick_method):
