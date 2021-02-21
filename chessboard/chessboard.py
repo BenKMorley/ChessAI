@@ -273,4 +273,3 @@ class Chessboard(object):
     print("Got clicks")
 
     plt.show()
-    
