@@ -273,5 +273,4 @@ class Chessboard(object):
     print("Got clicks")
 
     plt.show()
-
-    # [[0.125, 0.10999999999999999], [0.9, 0.88]]
+    
