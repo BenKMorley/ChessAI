@@ -1,5 +1,5 @@
 python_binary(
-  name = "chessboard",
+  name = "play",
   main = "main.py",
   deps = [
       "//chessboard:chessboard"
