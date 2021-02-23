@@ -4,6 +4,7 @@ from PyQt5.QtGui import QIcon, QPainter, QColor, QFont, QPainterPath, QPen, QPol
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
 
 def display(chessboard):
+    chessboard.find_all_moves()
     app = QApplication(sys.argv)
     ex = BoardGuiQt(chessboard)
     sys.exit(app.exec_())
@@ -86,29 +87,56 @@ class BoardGuiQt(QWidget):
         row = int(8 - ((y - self.vertical_margin) / self.square_size))
         return (col, row)
 
+    def to_weird_coords(self, coords):
+        return ( 7-coords[1],coords[0])
+    
+    def from_weird_coords(self, coords):
+        return (coords[1],7-coords[0])
+
+    def piece_at(self, coords):
+        c = self.to_weird_coords(coords)
+        return self.chessboard.get_positions()[c[0],c[1]]
+
+    def posible_moves(self, coords):
+        c = self.to_weird_coords(coords)
+        moves = self.chessboard.possible_moves[c[0],c[1]].keys()
+        return [self.from_weird_coords(move) for move in moves]
+
+    def move(self, from_coord, to_coord):
+        self.chessboard.move(self.to_weird_coords(from_coord), self.to_weird_coords(to_coord))
+
     def mousePressEvent(self, e):
         coords = self.get_coords(e)
         if not coords:
             return
 
-        if self.selected:
+        if coords in self.highlighted:
             return
         
-        self.selected = coords
-        self.update(0,0,self.canvas_width, self.canvas_height)
+        piece = self.piece_at(coords)
+        if piece != "":
+            self.selected = coords
+            self.highlighted = self.posible_moves(self.selected)
+            self.update(0,0,self.canvas_width, self.canvas_height)
         
 
     def mouseReleaseEvent(self, e):
         coords = self.get_coords(e)
         if not coords:
             return
-        if self.selected != coords:
-            self.selected = None
-            self.highlighted = [coords]
-        
-        self.update(0,0,self.canvas_width, self.canvas_height)
 
-
+        if self.selected and self.selected != coords:
+            if coords in self.highlighted:
+                self.move(self.selected, coords)
+                self.selected = None
+                self.highlighted = []
+                self.update(0,0,self.canvas_width, self.canvas_height)
+            else:
+                piece = self.piece_at(coords)
+                if piece != "":
+                    self.selected = coords
+                    self.highlighted = self.posible_moves(self.selected)
+                    self.update(0,0,self.canvas_width, self.canvas_height)
 
     def draw_square(self, qp, coord, colour):
         qp.setPen(Qt.NoPen)
@@ -142,7 +170,7 @@ class BoardGuiQt(QWidget):
             self.draw_square(qp, self.selected, self.selected_colour)
 
     def draw_pieces(self, qp):
-        for j, rank in enumerate(self.chessboard.piece_names):
+        for j, rank in enumerate(self.chessboard.get_positions()):
             for i, piece in enumerate(rank):
                 self.draw_piece(qp, (i,j), piece)
     

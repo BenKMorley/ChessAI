@@ -128,5 +128,5 @@ class BoardGuiTk(tk.Frame):
         self.canvas.delete("piece")
         for i in range(8):
             for j in range(8):
-                if self.chessboard.piece_names[i, j] != '':
-                    self.draw_piece(self.chessboard.piece_names[i, j], (j, 7-i))
+                if self.chessboard.get_positions()[i, j] != '':
+                    self.draw_piece(self.chessboard.get_positions()[i, j], (j, 7-i))

@@ -114,3 +114,6 @@ class Chessboard(object):
       self.black_pieces[name][finish] = 1
     
     self.find_all_moves()
+
+  def get_positions(self):
+    return self.piece_names

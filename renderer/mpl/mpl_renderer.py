@@ -131,7 +131,7 @@ class BoardGuiMatplotlib():
         x = int(numpy.rint(event.y - self.bottom_left[1])) * 8 // int(numpy.rint(self.top_right[1] - self.bottom_left[1]))
         y = 7 - int(numpy.rint(event.x - self.bottom_left[0])) * 8 // int(numpy.rint(self.top_right[0] - self.bottom_left[0]))
 
-        print(self.chessboard.piece_names[x, y])
+        print(self.chessboard.get_positions()[x, y])
 
         # pdb.set_trace()
 
@@ -165,8 +165,8 @@ class BoardGuiMatplotlib():
     def plot_pieces(self):
         for i in range(8):
             for j in range(8):
-                if self.chessboard.piece_names[i, j] != '':
-                    self.artists_new.extend(self.plot_piece(self.chessboard.piece_names[i, j], [i, j]))
+                if self.chessboard.get_positions()[i, j] != '':
+                    self.artists_new.extend(self.plot_piece(self.chessboard.get_positions()[i, j], [i, j]))
     
     def refresh_artists(self):
         for artist in self.artists_current:
