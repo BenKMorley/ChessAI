@@ -7,9 +7,17 @@ pip_library(
 )
 
 pip_library(
-    name = "matplotlib_isolated",
-    package_name = "matplotlib",
+    name = "matplotlib",
     version = "3.3.4",
+        deps = [
+        ":numpy",
+        ":pyparsing",
+        ":cycler",
+        ":six",
+        ":python-dateutil",
+        ":kiwisolver",
+        ":pillow",
+    ],
 )
 
 pip_library(
@@ -42,16 +50,17 @@ pip_library(
     version = "8.1.0",
 )
 
-python_library(
-    name = "matplotlib",
+pip_library(
+    name = "PyQt5",
+    version = "5.15.2",
+    package_name = "PyQt5",
     deps = [
-        ":matplotlib_isolated",
-        ":numpy",
-        ":pyparsing",
-        ":cycler",
-        ":six",
-        ":python-dateutil",
-        ":kiwisolver",
-        ":pillow",
+        ":PyQt5-sip",
     ],
+    zip_safe = False, # This is because PyQt5 has shared object files which can't be linked to them when zipped up
+)
+
+pip_library(
+    name = "PyQt5-sip",
+    version = "12.8.1",
 )
