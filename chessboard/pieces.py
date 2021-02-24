@@ -352,4 +352,29 @@ def piece_moves(name, position, piece_names):
         if piece_names[i_, j_][0: 5] != "black":
           possible_moves[(i_, j_)] = "black king"
 
+  if name == "white knight":
+    locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
+                 [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
+                 [i + 2, j - 1], [i + 2, j + 1]]
+
+    for location in locations:
+      i_, j_ = location[0], location[1]
+      if (i_ >= 0) and (i_ <= 7):
+        if (j_ >= 0) and (j_ <= 7):
+          if piece_names[i_, j_][0: 5] != "white":
+            possible_moves[(i_, j_)] = "white knight"
+
+  if name == "black knight":
+    locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
+                 [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
+                 [i + 2, j - 1], [i + 2, j + 1]]
+
+    for location in locations:
+      i_, j_ = location[0], location[1]
+
+      if (i_ >= 0) and (i_ <= 7):
+        if (j_ >= 0) and (j_ <= 7):
+          if piece_names[i_, j_][0: 5] != "black":
+            possible_moves[(i_, j_)] = "black knight"
+
   return possible_moves
