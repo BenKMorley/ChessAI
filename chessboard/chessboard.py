@@ -111,3 +111,6 @@ class Chessboard(object):
           piece_array_binary[11, i, j] = 1
 
     return piece_array_binary
+
+  def get_positions():
+    return self.piece_names
