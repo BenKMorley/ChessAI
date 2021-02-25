@@ -34,6 +34,8 @@ class Chessboard(object):
     self.piece_names[0, 3] = "black queen"
 
     self.next_move = "white"
+    self.white_king_position = [7, 4]
+    self.black_king_position = [0, 4]
 
     self.find_all_moves()
 
@@ -59,6 +61,16 @@ class Chessboard(object):
       self.next_move = "white"
     
     self.find_all_moves()
+
+    if name == "white king":
+      self.white_king_position = list(finish)
+
+    if name == "black king":
+      self.black_king_position = list(finish)
+
+    print("Looking for checks:")
+    print(self.check_for_check(self.white_king_position, self.piece_names))
+    print(self.check_for_check(self.black_king_position, self.piece_names))
 
   def construct_piece_binary_arrays(self):
     """
@@ -128,7 +140,7 @@ class Chessboard(object):
 
   def check_for_check(self, king_position, piece_names):
     i, j = king_position
-    color = piece_names[0: 5]
+    color = piece_names[i, j][0: 5]
     check = False
 
     if color == "white":
@@ -138,11 +150,11 @@ class Chessboard(object):
                    [i + 2, j - 1], [i + 2, j + 1]]
 
       for location in locations:
-        i, j = location
+        i_, j_ = location
 
-        if 0 <= i and i <= 7:
-          if 0 <= j and j <= 7:
-            if piece_names[i, j] == "black knight":
+        if 0 <= i_ and i_ <= 7:
+          if 0 <= j_ and j_ <= 7:
+            if piece_names[i_, j_] == "black knight":
               check = True
 
       # Check along the horizontals and verticals (rooks + queens)
@@ -208,7 +220,7 @@ class Chessboard(object):
 
       # Check along the diagonals for bishops and queens
       i_, j_ = i, j
-      while i_ < 7 and j < 7:
+      while i_ < 7 and j_ < 7:
         piece = piece_names[i_ + 1, j_ + 1]
 
         if piece == "black bishop" or piece == "black queen":
@@ -224,7 +236,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ > 0 and j < 7:
+      while i_ > 0 and j_ < 7:
         piece = piece_names[i_ - 1, j_ + 1]
 
         if piece == "black bishop" or piece == "black queen":
@@ -240,7 +252,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ > 0 and j > 0:
+      while i_ > 0 and j_ > 0:
         piece = piece_names[i_ - 1, j_ - 1]
 
         if piece == "black bishop" or piece == "black queen":
@@ -256,7 +268,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ < 7 and j > 0:
+      while i_ < 7 and j_ > 0:
         piece = piece_names[i_ + 1, j_ - 1]
 
         if piece == "black bishop" or piece == "black queen":
@@ -272,11 +284,12 @@ class Chessboard(object):
           break
 
       # Check for pawns
-      if piece_names[i + 1, j - 1] == "black pawn":
-        check = True
+      if i < 7:
+        if piece_names[i + 1, j - 1] == "black pawn":
+          check = True
 
-      if piece_names[i + 1, j + 1] == "black pawn":
-        check = True
+        if piece_names[i + 1, j + 1] == "black pawn":
+          check = True
 
     if color == "black":
       # Check for knights
@@ -285,11 +298,11 @@ class Chessboard(object):
                    [i + 2, j - 1], [i + 2, j + 1]]
 
       for location in locations:
-        i, j = location
+        i_, j_ = location
 
-        if 0 <= i and i <= 7:
-          if 0 <= j and j <= 7:
-            if piece_names[i, j] == "white knight":
+        if 0 <= i_ and i_ <= 7:
+          if 0 <= j_ and j_ <= 7:
+            if piece_names[i_, j_] == "white knight":
               check = True
 
       # Check along the horizontals and verticals (rooks + queens)
@@ -355,7 +368,7 @@ class Chessboard(object):
 
       # Check along the diagonals for bishops and queens
       i_, j_ = i, j
-      while i_ < 7 and j < 7:
+      while i_ < 7 and j_ < 7:
         piece = piece_names[i_ + 1, j_ + 1]
 
         if piece == "white bishop" or piece == "white queen":
@@ -371,7 +384,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ > 0 and j < 7:
+      while i_ > 0 and j_ < 7:
         piece = piece_names[i_ - 1, j_ + 1]
 
         if piece == "white bishop" or piece == "white queen":
@@ -387,7 +400,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ > 0 and j > 0:
+      while i_ > 0 and j_ > 0:
         piece = piece_names[i_ - 1, j_ - 1]
 
         if piece == "white bishop" or piece == "white queen":
@@ -403,7 +416,7 @@ class Chessboard(object):
           break
 
       i_, j_ = i, j
-      while i_ < 7 and j > 0:
+      while i_ < 7 and j_ > 0:
         piece = piece_names[i_ + 1, j_ - 1]
 
         if piece == "white bishop" or piece == "white queen":
@@ -419,8 +432,11 @@ class Chessboard(object):
           break
 
       # Check for pawns
-      if piece_names[i - 1, j - 1] == "white pawn":
-        check = True
+      if i > 0:
+        if piece_names[i - 1, j - 1] == "white pawn":
+          check = True
 
-      if piece_names[i - 1, j + 1] == "white pawn":
-        check = True
+        if piece_names[i - 1, j + 1] == "white pawn":
+          check = True
+
+    return check
