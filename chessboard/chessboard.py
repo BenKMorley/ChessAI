@@ -33,13 +33,15 @@ class Chessboard(object):
     self.piece_names[7, 3] = "white queen"
     self.piece_names[0, 3] = "black queen"
 
+    self.next_move = "white"
+
     self.find_all_moves()
 
   def find_all_moves(self):
     for i in range(8):
       for j in range(8):
         # Remove previously stored moves
-        self.possible_moves[i, j] = piece_moves(self.piece_names[i, j], [i, j], self.piece_names)
+        self.possible_moves[i, j] = piece_moves(self.piece_names[i, j], [i, j], self.piece_names, self.next_move)
 
   def move(self, start, finish):
     start = tuple(start)
@@ -49,6 +51,12 @@ class Chessboard(object):
     name = self.piece_names[start]
     self.piece_names[start] = ''
     self.piece_names[finish] = name
+
+    if self.next_move == "white":
+      self.next_move = "black"
+
+    else:
+      self.next_move = "white"
     
     self.find_all_moves()
 
@@ -114,3 +122,6 @@ class Chessboard(object):
 
   def get_positions(self):
     return self.piece_names
+
+  def get_next_move(self):
+    return self.next_move
