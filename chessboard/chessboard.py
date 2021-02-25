@@ -125,3 +125,302 @@ class Chessboard(object):
 
   def get_next_move(self):
     return self.next_move
+
+  def check_for_check(self, king_position, piece_names):
+    i, j = king_position
+    color = piece_names[0: 5]
+    check = False
+
+    if color == "white":
+      # Check for knights
+      locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
+                   [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
+                   [i + 2, j - 1], [i + 2, j + 1]]
+
+      for location in locations:
+        i, j = location
+
+        if 0 <= i and i <= 7:
+          if 0 <= j and j <= 7:
+            if piece_names[i, j] == "black knight":
+              check = True
+
+      # Check along the horizontals and verticals (rooks + queens)
+      i_, j_ = i, j
+      while i_ < 7:
+        piece = piece_names[i_ + 1, j_]
+
+        if piece == "black rook" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0:
+        piece = piece_names[i_ - 1, j_]
+
+        if piece == "black rook" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while j_ > 0:
+        piece = piece_names[i_, j_ - 1]
+
+        if piece == "black rook" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while j_ < 7:
+        piece = piece_names[i_, j_ + 1]
+
+        if piece == "black rook" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      # Check along the diagonals for bishops and queens
+      i_, j_ = i, j
+      while i_ < 7 and j < 7:
+        piece = piece_names[i_ + 1, j_ + 1]
+
+        if piece == "black bishop" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0 and j < 7:
+        piece = piece_names[i_ - 1, j_ + 1]
+
+        if piece == "black bishop" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0 and j > 0:
+        piece = piece_names[i_ - 1, j_ - 1]
+
+        if piece == "black bishop" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ < 7 and j > 0:
+        piece = piece_names[i_ + 1, j_ - 1]
+
+        if piece == "black bishop" or piece == "black queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      # Check for pawns
+      if piece_names[i + 1, j - 1] == "black pawn":
+        check = True
+
+      if piece_names[i + 1, j + 1] == "black pawn":
+        check = True
+
+    if color == "black":
+      # Check for knights
+      locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
+                   [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
+                   [i + 2, j - 1], [i + 2, j + 1]]
+
+      for location in locations:
+        i, j = location
+
+        if 0 <= i and i <= 7:
+          if 0 <= j and j <= 7:
+            if piece_names[i, j] == "white knight":
+              check = True
+
+      # Check along the horizontals and verticals (rooks + queens)
+      i_, j_ = i, j
+      while i_ < 7:
+        piece = piece_names[i_ + 1, j_]
+
+        if piece == "white rook" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0:
+        piece = piece_names[i_ - 1, j_]
+
+        if piece == "white rook" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while j_ > 0:
+        piece = piece_names[i_, j_ - 1]
+
+        if piece == "white rook" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while j_ < 7:
+        piece = piece_names[i_, j_ + 1]
+
+        if piece == "white rook" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      # Check along the diagonals for bishops and queens
+      i_, j_ = i, j
+      while i_ < 7 and j < 7:
+        piece = piece_names[i_ + 1, j_ + 1]
+
+        if piece == "white bishop" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0 and j < 7:
+        piece = piece_names[i_ - 1, j_ + 1]
+
+        if piece == "white bishop" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          j_ += 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ > 0 and j > 0:
+        piece = piece_names[i_ - 1, j_ - 1]
+
+        if piece == "white bishop" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ -= 1
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      i_, j_ = i, j
+      while i_ < 7 and j > 0:
+        piece = piece_names[i_ + 1, j_ - 1]
+
+        if piece == "white bishop" or piece == "white queen":
+          check = True
+          break
+
+        elif piece == "":
+          i_ += 1
+          j_ -= 1
+          continue
+
+        else:
+          break
+
+      # Check for pawns
+      if piece_names[i - 1, j - 1] == "white pawn":
+        check = True
+
+      if piece_names[i - 1, j + 1] == "white pawn":
+        check = True
