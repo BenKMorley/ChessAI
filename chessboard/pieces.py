@@ -29,7 +29,7 @@ def piece_moves(name, position, piece_names, next_move):
                     possible_moves[(i - 1, j - 1)] = "white pawn"
 
             if j < 7:
-                if piece_names[i - 1, j - 1][0: 5] == "black":
+                if piece_names[i - 1, j + 1][0: 5] == "black":
                     possible_moves[(i - 1, j + 1)] = "white pawn"
 
         if name == "white rook":
