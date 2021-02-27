@@ -9,6 +9,16 @@ python_library(
   ],
   deps = [
     "//third_party/python:numpy",
-    "//third_party/python:matplotlib",
   ],
+)
+
+python_test(
+  name = "chessboard_test",
+  srcs = [
+    "chessboard_test.py",
+    "pieces_test.py",
+  ],
+  deps = [
+    ":chessboard",
+  ]
 )

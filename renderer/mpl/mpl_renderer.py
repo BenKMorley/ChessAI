@@ -12,10 +12,13 @@ bishop_shape = [[0, -0.35], [-0.35, 0], [0, 0.35], [0.35, 0]]
 knight_shape = [[-0.25, 0.35], [0.25, 0.15], [0.25, -0.35], [-0.25, -0.35]]
 king_shape = [[-0.15, -0.4], [-0.15, -0.15], [-0.4, -0.15], [-0.4, 0.15], [-0.15, 0.15], [-0.15, 0.4],
               [0.15, 0.4], [0.15, 0.15], [0.4, 0.15], [0.4, -0.15], [0.15, -0.15], [0.15, -0.4]]
-queen_shape = [[-0.25, -0.35], [-0.4, 0.05], [0, 0.35], [0.4, 0.05], [0.25, -0.35]]
+queen_shape = [[-0.25, -0.35], [-0.4, 0.05],
+               [0, 0.35], [0.4, 0.05], [0.25, -0.35]]
 
 
-shape_dict = {'bishop': bishop_shape, 'knight': knight_shape, 'king': king_shape, 'queen': queen_shape}
+shape_dict = {'bishop': bishop_shape, 'knight': knight_shape,
+              'king': king_shape, 'queen': queen_shape}
+
 
 def display(chessboard):
     renderer = BoardGuiMatplotlib(chessboard)
@@ -28,7 +31,8 @@ class BoardGuiMatplotlib():
         self.chessboard = chessboard
 
         # Make a chessboard base
-        self.board = (numpy.ones((8, 8)) - (numpy.indices((8, 8))[0] + numpy.indices((8, 8))[1]) + 1) % 2
+        self.board = (numpy.ones((8, 8)) - (numpy.indices((8, 8))
+                                            [0] + numpy.indices((8, 8))[1]) + 1) % 2
 
         self.black_color = numpy.array([130 / 256, 90 / 256, 80 / 256, 1])
         self.white_color = numpy.array([245 / 256, 245 / 256, 220 / 256, 1])
@@ -68,7 +72,8 @@ class BoardGuiMatplotlib():
         self.fig = fig
 
         ax.set_yticklabels(numpy.linspace(0, 8, 9, dtype=int))
-        ax.set_xticklabels(numpy.array(['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A', '?'])[::-1])
+        ax.set_xticklabels(numpy.array(
+            ['H', 'G', 'F', 'E', 'D', 'C', 'B', 'A', '?'])[::-1])
 
         indices = numpy.indices((8, 8))
 
@@ -92,7 +97,8 @@ class BoardGuiMatplotlib():
         bbox_points = numpy.array(self.ax.bbox.get_points())
 
         bbox_scale = numpy.array(self.ax.bbox._bbox)
-        bbox_min = numpy.min(bbox_points, axis=0).reshape(1, 2).repeat(2, axis=0)
+        bbox_min = numpy.min(bbox_points, axis=0).reshape(
+            1, 2).repeat(2, axis=0)
         diff = numpy.abs(bbox_points - numpy.roll(bbox_points, 1, axis=0))
         bbox = bbox_min + diff * bbox_scale
 
@@ -117,19 +123,21 @@ class BoardGuiMatplotlib():
             self.about_to_cal_bot_left = True
 
             return 0
-        
+
         if not self.calibrated_top_right:
             print("Please click the top-right corner of the board")
             self.about_to_cal_top_right = True
 
             return 0
-        
+
         print(self.top_right)
         print(self.bottom_left)
 
         # Using the convention for piece[x, y] same as previously
-        x = int(numpy.rint(event.y - self.bottom_left[1])) * 8 // int(numpy.rint(self.top_right[1] - self.bottom_left[1]))
-        y = 7 - int(numpy.rint(event.x - self.bottom_left[0])) * 8 // int(numpy.rint(self.top_right[0] - self.bottom_left[0]))
+        x = int(numpy.rint(event.y - self.bottom_left[1])) * 8 // int(
+            numpy.rint(self.top_right[1] - self.bottom_left[1]))
+        y = 7 - int(numpy.rint(event.x - self.bottom_left[0])) * 8 // int(
+            numpy.rint(self.top_right[0] - self.bottom_left[0]))
 
         print(self.chessboard.get_positions()[x, y])
 
@@ -144,7 +152,7 @@ class BoardGuiMatplotlib():
             origin = self.select_moves[(x, y)]
             self.chessboard.move(origin, (x, y))
             flag = True
-        
+
         self.plot_pieces()
 
         # Remove any previous clicks
@@ -154,7 +162,8 @@ class BoardGuiMatplotlib():
         if not flag:
             self.select_moves = {}
             for move in moves.keys():
-                self.artists_new.append(self.plot_possible_move([move[0], move[1]]))
+                self.artists_new.append(
+                    self.plot_possible_move([move[0], move[1]]))
                 self.select_moves[(move[0], move[1])] = (x, y)
             print(self.select_moves)
 
@@ -166,14 +175,14 @@ class BoardGuiMatplotlib():
         for i in range(8):
             for j in range(8):
                 if self.chessboard.get_positions()[i, j] != '':
-                    self.artists_new.extend(self.plot_piece(self.chessboard.get_positions()[i, j], [i, j]))
-    
+                    self.artists_new.extend(self.plot_piece(
+                        self.chessboard.get_positions()[i, j], [i, j]))
+
     def refresh_artists(self):
         for artist in self.artists_current:
             artist.remove()
         self.artists_current = self.artists_new
         self.artists_new = []
-        
 
     def plot_possible_move(self, position):
         i, j = position
@@ -187,11 +196,11 @@ class BoardGuiMatplotlib():
         if piece_type == 'pawn':
             if color == 'white':
                 return [self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='w')),
-                    self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
+                        self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
 
             if color == 'black':
                 return [self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k')),
-                    self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
+                        self.ax.add_artist(plt.Circle([j, 7 - i], radius=0.3, zorder=1, color='k', fill=False, lw=2))]
 
         if piece_type == 'rook':
             if color == 'white':
