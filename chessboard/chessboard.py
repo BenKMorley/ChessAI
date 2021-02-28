@@ -43,9 +43,16 @@ class Chessboard():
     def find_all_moves(self):
         for i in range(8):
             for j in range(8):
-                # Remove previously stored moves
-                self.possible_moves[i, j] = piece_moves(
+                # Find all possible moves ignoring check
+                potential_moves = piece_moves(
                     self.piece_names[i, j], [i, j], self.piece_names, self.next_move)
+                
+                # Now only keep the moves if they don't result in check
+                for finish in potential_moves.keys():
+                    check = self.check_for_check(self.next_move, [(i, j), finish])
+
+                    if not check:
+                        self.possible_moves[i, j][finish] = potential_moves[finish]
 
     def move(self, start, finish):
         # pdb.set_trace()
@@ -141,7 +148,22 @@ class Chessboard():
     def get_next_move(self):
         return self.next_move
 
-    def check_for_check(self, color):
+    def check_for_check(self, color, move=None):
+        """
+            move: expect a list of (2, ) tuples with the start and finish
+            positions of the move.
+        """
+        if move is not None:
+            start, finish = move
+            # Save the old positions for later restoration
+            start_mem = self.piece_names[start]
+            finish_mem = self.piece_names[finish]
+
+            # Perform the move (note we are not checking here if the move is
+            # valid)
+            self.piece_names[finish] = start_mem
+            self.piece_names[start] = ''
+
         i, j = numpy.argwhere(self.piece_names == f"{color} king")[0]
         check = False
 
@@ -287,11 +309,13 @@ class Chessboard():
 
             # Check for pawns
             if i < 7:
-                if self.piece_names[i + 1, j - 1] == "black pawn":
-                    check = True
+                if j > 0:
+                    if self.piece_names[i + 1, j - 1] == "black pawn":
+                        check = True
 
-                if self.piece_names[i + 1, j + 1] == "black pawn":
-                    check = True
+                if j < 7:
+                    if self.piece_names[i + 1, j + 1] == "black pawn":
+                        check = True
 
         if color == "black":
             # Check for knights
@@ -435,10 +459,17 @@ class Chessboard():
 
             # Check for pawns
             if i > 0:
-                if self.piece_names[i - 1, j - 1] == "white pawn":
-                    check = True
+                if j > 0:
+                    if self.piece_names[i - 1, j - 1] == "white pawn":
+                        check = True
 
-                if self.piece_names[i - 1, j + 1] == "white pawn":
-                    check = True
+                if j < 7:
+                    if self.piece_names[i - 1, j + 1] == "white pawn":
+                        check = True
+
+        if move is not None:
+            # Restore pieces to their original positions
+            self.piece_names[start] = start_mem
+            self.piece_names[finish] = finish_mem                                    
 
         return check
