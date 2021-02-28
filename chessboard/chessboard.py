@@ -35,14 +35,15 @@ class Chessboard():
         self.piece_names[0, 3] = "black queen"
 
         self.next_move = "white"
-        self.white_king_position = [7, 4]
-        self.black_king_position = [0, 4]
 
         self.find_all_moves()
 
     def find_all_moves(self):
         for i in range(8):
             for j in range(8):
+                # Remove prior moves
+                self.possible_moves[i, j] = {}
+
                 # Find all possible moves ignoring check
                 potential_moves = piece_moves(
                     self.piece_names[i, j], [i, j], self.piece_names, self.next_move)
@@ -71,12 +72,6 @@ class Chessboard():
             self.next_move = "white"
 
         self.find_all_moves()
-
-        if name == "white king":
-            self.white_king_position = list(finish)
-
-        if name == "black king":
-            self.black_king_position = list(finish)
 
         print("Looking for checks:")
         print(self.check_for_check("white"))
@@ -470,6 +465,6 @@ class Chessboard():
         if move is not None:
             # Restore pieces to their original positions
             self.piece_names[start] = start_mem
-            self.piece_names[finish] = finish_mem                                    
+            self.piece_names[finish] = finish_mem
 
         return check
