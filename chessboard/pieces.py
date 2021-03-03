@@ -1,3 +1,52 @@
+from enum import Enum
+
+class Colour(Enum):
+    white = 0
+    black = 1
+class Piece(Enum):
+    wPawn = 0
+    wKnight = 1
+    wBishop = 2
+    wRook = 3
+    wQueen = 4
+    wKing = 5
+
+    bPawn = 6
+    bKnight = 7
+    bBishop = 8
+    bRook = 9
+    bQueen = 10
+    bKing = 11
+
+    def colour(self):
+        return Colour.black if self.value//6 else Colour.white
+    
+    def is_white(self):
+        return self.colour() == Colour.white
+    
+    def is_black(self):
+        return self.colour() == Colour.black
+
+    def is_pawn(self):
+        return self.value%6 == 0
+    
+    def is_knight(self):
+        return self.value%6 == 1
+    
+    def is_bishop(self):
+        return self.value%6 == 2
+
+    def is_rook(self):
+        return self.value%6 == 3
+
+    def is_queen(self):
+        return self.value%6 == 4
+    
+    def is_king(self):
+        return self.value%6 == 5
+
+
+
 def piece_moves(name, position, piece_names, next_move):
     i, j = position
     possible_moves = {}

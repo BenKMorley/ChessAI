@@ -1,9 +1,10 @@
 from unittest import TestCase
-
+from chessboard.chessboard import Chessboard
 
 class TestChessboard(TestCase):
-    def setUp(self):
-        print("setup")
+    def test_fen_to_board(self):
+        c = Chessboard()
 
-    def test_true(self):
-        self.assertTrue(False)
+        c.fen_to_board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+        print(c.board)
+        self.assertFalse(True)

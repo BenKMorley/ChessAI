@@ -1,42 +1,78 @@
 import numpy
-from chessboard.pieces import piece_moves
+import string
+from chessboard.pieces import Piece, Colour, piece_moves
 
 
 class Chessboard():
     """Chessboard class encapsulates all game logic"""
+
     def __init__(self):
         # Define an array containing the names of all of the pieces
-        self.piece_names = numpy.full((8, 8), "", dtype='<U20')
+        starting_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        self.fen_to_board(starting_fen)
 
         self.possible_moves = numpy.zeros((8, 8), dtype=object)
         for i in range(8):
             for j in range(8):
                 self.possible_moves[i, j] = {}
-
-        # Note I use the convention whereby the array printed is in the same layout
-        # as the chessboard
-        self.piece_names[6, :] = "white pawn"
-        self.piece_names[1, :] = "black pawn"
-        self.piece_names[7, 0] = "white rook"
-        self.piece_names[7, 7] = "white rook"
-        self.piece_names[0, 0] = "black rook"
-        self.piece_names[0, 7] = "black rook"
-        self.piece_names[7, 2] = "white bishop"
-        self.piece_names[7, 5] = "white bishop"
-        self.piece_names[0, 2] = "black bishop"
-        self.piece_names[0, 5] = "black bishop"
-        self.piece_names[7, 1] = "white knight"
-        self.piece_names[7, 6] = "white knight"
-        self.piece_names[0, 1] = "black knight"
-        self.piece_names[0, 6] = "black knight"
-        self.piece_names[7, 4] = "white king"
-        self.piece_names[0, 4] = "black king"
-        self.piece_names[7, 3] = "white queen"
-        self.piece_names[0, 3] = "black queen"
-
-        self.next_move = "white"
-
         self.find_all_moves()
+
+        
+    def fen_to_board(self, fen_string):
+        fen_components = fen_string.split()
+        if len(fen_components) != 6:
+            print("error loading fen_string: too many components")
+            return
+
+        fen_translation = {
+            "P": Piece.wPawn,
+            "N": Piece.wKnight,
+            "B": Piece.wBishop,
+            "R": Piece.wRook,
+            "Q": Piece.wQueen,
+            "K": Piece.wKing,
+
+            "p": Piece.bPawn,
+            "n": Piece.bKnight,
+            "b": Piece.bBishop,
+            "r": Piece.bRook,
+            "q": Piece.bQueen,
+            "k": Piece.bKing,  
+        }
+
+        fen_nums = ["1","2","3","4","5","6","7","8"]
+        
+        self.board = numpy.full((8, 8), None, dtype=Piece)
+        row = 0
+        col = 0
+        for char in fen_components[0]:
+            if char == "/":
+                row += 1
+                col = 0
+                continue
+            if char in fen_nums:
+                col += int(char)
+                continue
+            self.board[row, col] = fen_translation[char]
+            if char == "k":
+                self.black_king_position = [row, col]
+            if char == "K":
+                self.white_king_position = [row, col]
+            col += 1
+
+        self.next_move = fen_components[1]
+        self.wCastleKing = True if fen_components[2][0] == 'K' else False
+        self.wCastleQueen = True if fen_components[2][1] == 'Q' else False
+        self.bCastleKing = True if fen_components[2][2] == 'k' else False
+        self.bCastleQueen = True if fen_components[2][3] == 'q' else False
+
+        self.en_passant = None if fen_components[3] == '-' else fen_components[3]
+
+        # This is the number of halfmoves since the last capture or pawn advance. The reason for this field is that the value is used in the fifty-move rule
+        self.halfmove_clock = int(fen_components[4])
+
+        self.move_number = int(fen_components[5])
+
 
     def find_all_moves(self):
         for i in range(8):
@@ -46,7 +82,7 @@ class Chessboard():
 
                 # Find all possible moves ignoring check
                 potential_moves = piece_moves(
-                    self.piece_names[i, j], [i, j], self.piece_names, self.next_move)
+                    self.board[i, j], [i, j], self.board, self.next_move)
                 
                 # Now only keep the moves if they don't result in check
                 for finish in potential_moves.keys():
@@ -61,11 +97,11 @@ class Chessboard():
         finish = tuple(finish)
 
         # Update piece position
-        name = self.piece_names[start]
-        self.piece_names[start] = ''
-        self.piece_names[finish] = name
+        name = self.board[start]
+        self.board[start] = ''
+        self.board[finish] = name
 
-        if self.next_move == "white":
+        if self.next_move == Colour.white:
             self.next_move = "black"
 
         else:
@@ -99,46 +135,12 @@ class Chessboard():
 
         for i in range(8):
             for j in range(8):
-                if self.piece_names[i, j] == "white pawn":
-                    piece_array_binary[0, i, j] = 1
-
-                if self.piece_names[i, j] == "white knight":
-                    piece_array_binary[1, i, j] = 1
-
-                if self.piece_names[i, j] == "white bishop":
-                    piece_array_binary[2, i, j] = 1
-
-                if self.piece_names[i, j] == "white rook":
-                    piece_array_binary[3, i, j] = 1
-
-                if self.piece_names[i, j] == "white queen":
-                    piece_array_binary[4, i, j] = 1
-
-                if self.piece_names[i, j] == "white king":
-                    piece_array_binary[5, i, j] = 1
-
-                if self.piece_names[i, j] == "black pawn":
-                    piece_array_binary[6, i, j] = 1
-
-                if self.piece_names[i, j] == "black knight":
-                    piece_array_binary[7, i, j] = 1
-
-                if self.piece_names[i, j] == "black bishop":
-                    piece_array_binary[8, i, j] = 1
-
-                if self.piece_names[i, j] == "black rook":
-                    piece_array_binary[9, i, j] = 1
-
-                if self.piece_names[i, j] == "black queen":
-                    piece_array_binary[10, i, j] = 1
-
-                if self.piece_names[i, j] == "black king":
-                    piece_array_binary[11, i, j] = 1
+                piece_array_binary[self.board[i, j].value, i, j] = 1
 
         return piece_array_binary
 
     def get_positions(self):
-        return self.piece_names
+        return self.board
 
     def get_next_move(self):
         return self.next_move
@@ -151,320 +153,181 @@ class Chessboard():
         if move is not None:
             start, finish = move
             # Save the old positions for later restoration
-            start_mem = self.piece_names[start]
-            finish_mem = self.piece_names[finish]
+            start_mem = self.board[start]
+            finish_mem = self.board[finish]
 
             # Perform the move (note we are not checking here if the move is
             # valid)
-            self.piece_names[finish] = start_mem
-            self.piece_names[start] = ''
+            self.board[finish] = start_mem
+            self.board[start] = ''
 
-        i, j = numpy.argwhere(self.piece_names == f"{color} king")[0]
+        i, j = numpy.argwhere(self.board == f"{color} king")[0]
+        current_piece = self.board[i, j]
         check = False
 
-        if color == "white":
-            # Check for knights
-            locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
-                         [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
-                         [i + 2, j - 1], [i + 2, j + 1]]
+        if current_piece.is_white():
+            enemyPawn = Piece.bPawn
+            enemyKnight = Piece.bKnight
+            enemyBishop = Piece.bBishop
+            enemyRook = Piece.bRook
+            enemyQueen = Piece.bQueen
+        else:
+            enemyPawn = Piece.wPawn
+            enemyKnight = Piece.wKnight
+            enemyBishop = Piece.wBishop
+            enemyRook = Piece.wRook
+            enemyQueen = Piece.wQueen
 
-            for location in locations:
-                i_, j_ = location
 
-                if 0 <= i_ and i_ <= 7:
-                    if 0 <= j_ and j_ <= 7:
-                        if self.piece_names[i_, j_] == "black knight":
-                            check = True
+        # Check for knights
+        locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
+                        [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
+                        [i + 2, j - 1], [i + 2, j + 1]]
 
-            # Check along the horizontals and verticals (rooks + queens)
-            i_, j_ = i, j
-            while i_ < 7:
-                piece = self.piece_names[i_ + 1, j_]
+        for location in locations:
+            i_, j_ = location
 
-                if piece == "black rook" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ += 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while i_ > 0:
-                piece = self.piece_names[i_ - 1, j_]
-
-                if piece == "black rook" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ -= 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while j_ > 0:
-                piece = self.piece_names[i_, j_ - 1]
-
-                if piece == "black rook" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    j_ -= 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while j_ < 7:
-                piece = self.piece_names[i_, j_ + 1]
-
-                if piece == "black rook" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    j_ += 1
-                    continue
-
-                else:
-                    break
-
-            # Check along the diagonals for bishops and queens
-            i_, j_ = i, j
-            while i_ < 7 and j_ < 7:
-                piece = self.piece_names[i_ + 1, j_ + 1]
-
-                if piece == "black bishop" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ += 1
-                    j_ += 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while i_ > 0 and j_ < 7:
-                piece = self.piece_names[i_ - 1, j_ + 1]
-
-                if piece == "black bishop" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ -= 1
-                    j_ += 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while i_ > 0 and j_ > 0:
-                piece = self.piece_names[i_ - 1, j_ - 1]
-
-                if piece == "black bishop" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ -= 1
-                    j_ -= 1
-                    continue
-
-                else:
-                    break
-
-            i_, j_ = i, j
-            while i_ < 7 and j_ > 0:
-                piece = self.piece_names[i_ + 1, j_ - 1]
-
-                if piece == "black bishop" or piece == "black queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ += 1
-                    j_ -= 1
-                    continue
-
-                else:
-                    break
-
-            # Check for pawns
-            if i < 7:
-                if j > 0:
-                    if self.piece_names[i + 1, j - 1] == "black pawn":
+            if 0 <= i_ and i_ <= 7:
+                if 0 <= j_ and j_ <= 7:
+                    if self.board[i_, j_] == Piece.bKnight:
                         check = True
 
-                if j < 7:
-                    if self.piece_names[i + 1, j + 1] == "black pawn":
-                        check = True
+        # Check along the horizontals and verticals (rooks + queens)
+        i_, j_ = i, j
+        while i_ < 7:
+            piece = self.board[i_ + 1, j_]
 
-        if color == "black":
-            # Check for knights
-            locations = [[i - 1, j - 2], [i + 1, j - 2], [i - 1, j + 2],
-                         [i + 1, j + 2], [i - 2, j - 1], [i - 2, j + 1],
-                         [i + 2, j - 1], [i + 2, j + 1]]
+            if piece == enemyRook or piece == enemyQueen:
+                check = True
+                break
 
-            for location in locations:
-                i_, j_ = location
+            elif piece == "":
+                i_ += 1
+                continue
 
-                if 0 <= i_ and i_ <= 7:
-                    if 0 <= j_ and j_ <= 7:
-                        if self.piece_names[i_, j_] == "white knight":
-                            check = True
+            else:
+                break
 
-            # Check along the horizontals and verticals (rooks + queens)
-            i_, j_ = i, j
-            while i_ < 7:
-                piece = self.piece_names[i_ + 1, j_]
+        i_, j_ = i, j
+        while i_ > 0:
+            piece = self.board[i_ - 1, j_]
 
-                if piece == "white rook" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyRook or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    i_ += 1
-                    continue
+            elif piece == "":
+                i_ -= 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while i_ > 0:
-                piece = self.piece_names[i_ - 1, j_]
+        i_, j_ = i, j
+        while j_ > 0:
+            piece = self.board[i_, j_ - 1]
 
-                if piece == "white rook" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyRook or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    i_ -= 1
-                    continue
+            elif piece == "":
+                j_ -= 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while j_ > 0:
-                piece = self.piece_names[i_, j_ - 1]
+        i_, j_ = i, j
+        while j_ < 7:
+            piece = self.board[i_, j_ + 1]
 
-                if piece == "white rook" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyRook or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    j_ -= 1
-                    continue
+            elif piece == "":
+                j_ += 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while j_ < 7:
-                piece = self.piece_names[i_, j_ + 1]
+        # Check along the diagonals for bishops and queens
+        i_, j_ = i, j
+        while i_ < 7 and j_ < 7:
+            piece = self.board[i_ + 1, j_ + 1]
 
-                if piece == "white rook" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyBishop or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    j_ += 1
-                    continue
+            elif piece == "":
+                i_ += 1
+                j_ += 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            # Check along the diagonals for bishops and queens
-            i_, j_ = i, j
-            while i_ < 7 and j_ < 7:
-                piece = self.piece_names[i_ + 1, j_ + 1]
+        i_, j_ = i, j
+        while i_ > 0 and j_ < 7:
+            piece = self.board[i_ - 1, j_ + 1]
 
-                if piece == "white bishop" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyBishop or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    i_ += 1
-                    j_ += 1
-                    continue
+            elif piece == "":
+                i_ -= 1
+                j_ += 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while i_ > 0 and j_ < 7:
-                piece = self.piece_names[i_ - 1, j_ + 1]
+        i_, j_ = i, j
+        while i_ > 0 and j_ > 0:
+            piece = self.board[i_ - 1, j_ - 1]
 
-                if piece == "white bishop" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyBishop or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    i_ -= 1
-                    j_ += 1
-                    continue
+            elif piece == "":
+                i_ -= 1
+                j_ -= 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while i_ > 0 and j_ > 0:
-                piece = self.piece_names[i_ - 1, j_ - 1]
+        i_, j_ = i, j
+        while i_ < 7 and j_ > 0:
+            piece = self.board[i_ + 1, j_ - 1]
 
-                if piece == "white bishop" or piece == "white queen":
-                    check = True
-                    break
+            if piece == enemyBishop or piece == enemyQueen:
+                check = True
+                break
 
-                elif piece == "":
-                    i_ -= 1
-                    j_ -= 1
-                    continue
+            elif piece == "":
+                i_ += 1
+                j_ -= 1
+                continue
 
-                else:
-                    break
+            else:
+                break
 
-            i_, j_ = i, j
-            while i_ < 7 and j_ > 0:
-                piece = self.piece_names[i_ + 1, j_ - 1]
+        # Check for pawns
+        if i < 7:
+            if self.board[i + 1, j - 1] == enemyPawn:
+                check = True
 
-                if piece == "white bishop" or piece == "white queen":
-                    check = True
-                    break
-
-                elif piece == "":
-                    i_ += 1
-                    j_ -= 1
-                    continue
-
-                else:
-                    break
-
-            # Check for pawns
-            if i > 0:
-                if j > 0:
-                    if self.piece_names[i - 1, j - 1] == "white pawn":
-                        check = True
-
-                if j < 7:
-                    if self.piece_names[i - 1, j + 1] == "white pawn":
-                        check = True
+            if self.board[i + 1, j + 1] == enemyPawn:
+                check = True
 
         if move is not None:
             # Restore pieces to their original positions
-            self.piece_names[start] = start_mem
-            self.piece_names[finish] = finish_mem
-
+            self.board[start] = start_mem
+            self.board[finish] = finish_mem
         return check
