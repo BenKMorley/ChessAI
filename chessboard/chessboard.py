@@ -1,5 +1,17 @@
 import numpy
 from chessboard.pieces.pieces import Piece, Colour, piece_moves
+from enum import Enum
+
+
+class GameState(Enum):
+    ongoing = 0
+    w_win = 1
+    b_win = 2
+    draw = 3
+
+    def is_gg(self):
+        if self.value > 0:
+            return True
 
 
 class Chessboard():
@@ -7,8 +19,8 @@ class Chessboard():
 
     def __init__(self):
         # Define an array containing the names of all of the pieces
-
         self.board = numpy.full((8, 8), None, dtype=Piece)
+        self.game_state = GameState.ongoing
         self.next_move = Colour.white
         self.w_castle_king = True
         self.w_castle_queen = True
@@ -30,7 +42,7 @@ class Chessboard():
                 # Remove prior moves
                 self.possible_moves[i, j] = {}
 
-                current_piece = self.board[i,j]
+                current_piece = self.board[i, j]
 
                 # Skip of this isn't a piece or it has wrong colour
                 if current_piece is None or current_piece.colour() != self.next_move:
@@ -55,16 +67,30 @@ class Chessboard():
         self.board[start] = None
         self.board[finish] = piece
 
-        self.next_move = self.next_move.opposite()
-        if self.next_move == Colour.white:
+        if self.next_move == GameState.White_Turn:
             self.move_number += 1
-        
 
+        self.next_move = self.next_move.opposite()
+
+        # Find possible moves for the next player
         self.find_all_moves()
 
-        print("Looking for checks:")
-        print(self.check_for_check(Colour.white))
-        print(self.check_for_check(Colour.black))
+        # If there are no possible moves the game ends
+        if len(self.possible_moves) == 0:
+            check = self.check_for_check(self.next_move)
+
+            # Stalemate
+            if not check:
+                self.game_state = GameState.draw
+
+            else:
+                if self.next_move == Colour.white:
+                    self.game_state = GameState.b_win
+
+                else:
+                    self.game_state = GameState.w_win
+
+        return self.game_state
 
     def construct_piece_binary_arrays(self):
         """
@@ -95,7 +121,7 @@ class Chessboard():
     def get_positions(self):
         return self.board
 
-    def get_next_move(self):
+    def get_board_state(self):
         return self.next_move
 
     def at_position(self, position):
@@ -103,6 +129,7 @@ class Chessboard():
         if 0 <= i and i <= 7:
             if 0 <= j and j <= 7:
                 return self.board[i, j]
+
         return None
 
     def check_for_check(self, colour, move=None):
@@ -152,9 +179,10 @@ class Chessboard():
         # Check for pawns
         i, j = position
         if colour == Colour.white:
-            pawn_locations = [[i-1, j+1], [i-1, j-1]]
+            pawn_locations = [[i - 1, j + 1], [i - 1, j - 1]]
+
         else:
-            pawn_locations = [[i+1, j+1], [i+1, j-1]]
+            pawn_locations = [[i + 1, j + 1], [i + 1, j - 1]]
 
         for location in pawn_locations:
             if self.at_position(location) in enemies:
