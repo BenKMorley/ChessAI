@@ -67,7 +67,7 @@ class Chessboard():
         self.board[start] = None
         self.board[finish] = piece
 
-        if self.next_move == GameState.White_Turn:
+        if self.next_move == Colour.white:
             self.move_number += 1
 
         self.next_move = self.next_move.opposite()
