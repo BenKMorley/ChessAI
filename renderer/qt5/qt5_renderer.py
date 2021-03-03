@@ -3,10 +3,10 @@ import random
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtGui import QIcon, QPainter, QColor, QFont, QPainterPath, QPen, QPolygonF
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
+from chessboard.pieces.pieces import Piece
 
 
 def display(chessboard):
-    chessboard.find_all_moves()
     app = QApplication(sys.argv)
     ex = BoardGuiQt(chessboard)
     sys.exit(app.exec_())
@@ -48,11 +48,16 @@ class BoardGuiQt(QWidget):
         self.canvas_height = self.board_height + 2 * self.vertical_margin
 
         self.complicated_shapes = {
-            "bishop": self.bishop_shape,
-            "knight": self.knight_shape,
-            "king": self.king_shape,
-            "queen": self.queen_shape,
-            "rook": self.rook_shape,
+            Piece.wBishop : self.bishop_shape,
+            Piece.bBishop : self.bishop_shape,
+            Piece.wKnight: self.knight_shape,
+            Piece.bKnight: self.knight_shape,
+            Piece.wKing: self.king_shape,
+            Piece.bKing: self.king_shape,
+            Piece.wQueen: self.queen_shape,
+            Piece.bQueen: self.queen_shape,
+            Piece.wRook: self.rook_shape,
+            Piece.bRook: self.rook_shape,
         }
 
         self.holding = None
@@ -179,23 +184,23 @@ class BoardGuiQt(QWidget):
     def draw_pieces(self, qp):
         for j, rank in enumerate(self.chessboard.get_positions()):
             for i, piece in enumerate(rank):
-                self.draw_piece(qp, (i, j), piece)
+                if piece is not None:
+                    self.draw_piece(qp, (i, j), piece)
 
     def draw_piece(self, qp, coord, piece):
         i, j = coord
-        colour = QColor(piece[0:5])
+        colour = QColor("white" if piece.is_white() else "black")
         outline = QColor("black")
-        piece_type = piece[6:]
 
         qp.setPen(QPen(outline, 5))
         qp.setBrush(colour)
 
-        if piece_type == 'pawn':
+        if piece.is_pawn():
             qp.drawEllipse(QPoint(self.horizontal_margin + (i + 0.5) * self.square_size,
                                   self.vertical_margin + (j+0.5) * self.square_size), self.square_size/3, self.square_size/3)
 
-        if piece_type in self.complicated_shapes:
-            polygon = self.complicated_shapes[piece_type]
+        if piece in self.complicated_shapes:
+            polygon = self.complicated_shapes[piece]
             points = [QPointF(self.horizontal_margin + (i + 0.5 + coord[0]) * self.square_size,
                               self.vertical_margin + (j + 0.5 - coord[1]) * self.square_size) for coord in polygon]
             qp.drawPolygon(QPolygonF(points))

@@ -1,13 +1,14 @@
 python_library(
-  name = "qt5_renderer",
+  name = "encoding",
   srcs = [
-    "qt5_renderer.py",
+    "encoding.py",
   ],
   visibility = [
     "PUBLIC"
   ],
   deps = [
+    "//third_party/python:numpy",
     "//chessboard/pieces:pieces",
-    "//third_party/python:PyQt5",
+    "//chessboard:chessboard",
   ],
 )

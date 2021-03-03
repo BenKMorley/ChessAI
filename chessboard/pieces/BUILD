@@ -1,23 +1,22 @@
 python_library(
-  name = "chessboard",
+  name = "pieces",
   srcs = [
-    "chessboard.py",
+    "pieces.py"
   ],
   visibility = [
     "PUBLIC"
   ],
   deps = [
-    "//chessboard/pieces:pieces",
     "//third_party/python:numpy",
   ],
 )
 
 python_test(
-  name = "chessboard_test",
+  name = "pieces_test",
   srcs = [
-    "chessboard_test.py",
+    "pieces_test.py",
   ],
   deps = [
-    ":chessboard",
+    ":pieces",
   ]
 )
