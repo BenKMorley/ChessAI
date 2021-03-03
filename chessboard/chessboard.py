@@ -1,4 +1,3 @@
-import string
 import numpy
 from chessboard.pieces.pieces import Piece, Colour, piece_moves
 
@@ -120,7 +119,7 @@ class Chessboard():
             # Perform the move (note we are not checking here if the move is
             # valid)
             self.board[finish] = start_mem
-            self.board[start] = ''
+            self.board[start] = None
 
         king = Piece.wKing if colour == Colour.white else Piece.bKing
         i, j = numpy.argwhere(self.board == king)[0]
