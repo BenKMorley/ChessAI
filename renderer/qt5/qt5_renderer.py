@@ -199,6 +199,10 @@ class BoardGuiQt(QWidget):
             qp.drawEllipse(QPoint(self.horizontal_margin + (i + 0.5) * self.square_size,
                                   self.vertical_margin + (j+0.5) * self.square_size), self.square_size/3, self.square_size/3)
 
+        if piece.is_enpassant():
+            qp.drawEllipse(QPoint(self.horizontal_margin + (i + 0.5) * self.square_size,
+                                  self.vertical_margin + (j+0.5) * self.square_size), self.square_size/4, self.square_size/4)
+
         if piece in self.complicated_shapes:
             polygon = self.complicated_shapes[piece]
             points = [QPointF(self.horizontal_margin + (i + 0.5 + coord[0]) * self.square_size,

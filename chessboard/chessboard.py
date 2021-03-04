@@ -27,7 +27,7 @@ class Chessboard():
         self.b_castle_king = True
         self.b_castle_queen = True
 
-        self.en_passant = None
+        self.en_passant = 0
         self.halfmove_clock = 0
         self.move_number = 0
 
@@ -59,19 +59,40 @@ class Chessboard():
                         self.possible_moves[i, j][finish] = potential_moves[finish]
 
     def move(self, start, finish):
+        # Clear out any old en passant pieces
+        for i in range(8):
+            for j in range(8):
+                if self.board[i, j] == Piece.wPawnEn:
+                    if finish == (i + 1, j) and self.possible_moves[start][finish][0] == Piece.bPawn:
+                        self.board[i, j] = None
+                    else:
+                        self.board[i, j] = Piece.wPawn
+
+                if self.board[i, j] == Piece.bPawnEn:
+                    if finish == (i - 1, j) and self.possible_moves[start][finish][0] == Piece.wPawn:
+                        self.board[i, j] = None
+                    else:
+                        self.board[i, j] = Piece.bPawn
+
         start = tuple(start)
         finish = tuple(finish)
 
         # Update piece position
         piece = self.board[start]
         self.board[start] = None
-        self.board[finish] = piece
+
+        if len(self.possible_moves[start][finish]) == 1:
+            self.board[finish] = self.possible_moves[start][finish][0]
+
+        else:
+            print("TODO: GUI to select piece for pawn promotion")
 
         if self.next_move == Colour.white:
             self.move_number += 1
 
         self.next_move = self.next_move.opposite()
 
+        print(self.board)
         # Find possible moves for the next player
         self.find_all_moves()
 
