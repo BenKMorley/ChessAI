@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtGui import QIcon, QPainter, QColor, QFont, QPainterPath, QPen, QPolygonF
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
 from chessboard.pieces.pieces import Piece
+from chessboard.chessboard import GameState
 
 
 def display(chessboard):
@@ -65,7 +66,6 @@ class BoardGuiQt(QWidget):
         self.init_UI()
 
     def init_UI(self):
-
         self.setGeometry(0, 0, self.canvas_width, self.canvas_height)
         self.setWindowTitle('ChessAI')
         self.setWindowIcon(QIcon('res/knight.png'))
@@ -84,43 +84,50 @@ class BoardGuiQt(QWidget):
 
     def get_coords(self, e):
         x, y = e.x(), e.y()
-        if x < self.horizontal_margin or x >= self.canvas_width - self.horizontal_margin:
-            return
-        if y < self.vertical_margin or y >= self.canvas_height - self.vertical_margin:
-            return
+
+        if (x < self.horizontal_margin) or (x >= self.canvas_width - self.horizontal_margin):
+            return None
+
+        if (y < self.vertical_margin) or (y >= self.canvas_height - self.vertical_margin):
+            return None
 
         col = int((x - self.horizontal_margin) / self.square_size)
         row = int(8 - ((y - self.vertical_margin) / self.square_size))
+
         return (col, row)
 
     def to_weird_coords(self, coords):
-        return (7-coords[1], coords[0])
+        return (7 - coords[1], coords[0])
 
     def from_weird_coords(self, coords):
-        return (coords[1], 7-coords[0])
+        return (coords[1], 7 - coords[0])
 
     def piece_at(self, coords):
         c = self.to_weird_coords(coords)
+
         return self.chessboard.get_positions()[c[0], c[1]]
 
     def posible_moves(self, coords):
         c = self.to_weird_coords(coords)
         moves = self.chessboard.possible_moves[c[0], c[1]].keys()
+
         return [self.from_weird_coords(move) for move in moves]
 
     def move(self, from_coord, to_coord):
-        self.chessboard.move(self.to_weird_coords(
-            from_coord), self.to_weird_coords(to_coord))
+        game_state = self.chessboard.move(self.to_weird_coords(from_coord),
+                                          self.to_weird_coords(to_coord))
+        return game_state
 
     def mousePressEvent(self, e):
         coords = self.get_coords(e)
-        if not coords:
-            return
+        if coords is None:
+            return None
 
         if coords in self.highlighted:
-            return
+            return None
 
         piece = self.piece_at(coords)
+
         if piece != "":
             self.selected = coords
             self.highlighted = self.posible_moves(self.selected)
@@ -128,21 +135,39 @@ class BoardGuiQt(QWidget):
 
     def mouseReleaseEvent(self, e):
         coords = self.get_coords(e)
-        if not coords:
-            return
+        if coords is None:
+            return None
 
         if self.selected and self.selected != coords:
             if coords in self.highlighted:
-                self.move(self.selected, coords)
+                game_state = self.move(self.selected, coords)
                 self.selected = None
                 self.highlighted = []
+
+                if game_state == GameState.w_win:
+                    self.highlighted = []
+                    for i in range(8):
+                        for j in range(8):
+                            self.highlighted.append((i, j))
+
+                elif game_state == GameState.b_win:
+                    self.highlighted = []
+                    for i in range(8):
+                        for j in range(8):
+                            self.highlighted.append((i, j))
+
                 self.update(0, 0, self.canvas_width, self.canvas_height)
+
             else:
                 piece = self.piece_at(coords)
                 if piece != "":
                     self.selected = coords
                     self.highlighted = self.posible_moves(self.selected)
                     self.update(0, 0, self.canvas_width, self.canvas_height)
+        
+        # Do nothing await a further click
+        else:
+            return None
 
     def draw_square(self, qp, coord, colour):
         qp.setPen(Qt.NoPen)

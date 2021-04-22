@@ -37,6 +37,8 @@ class Chessboard():
                 self.possible_moves[i, j] = {}
 
     def find_all_moves(self):
+        total = 0
+
         for i in range(8):
             for j in range(8):
                 # Remove prior moves
@@ -57,6 +59,9 @@ class Chessboard():
 
                     if not check:
                         self.possible_moves[i, j][finish] = potential_moves[finish]
+                        total += 1
+
+        return total
 
     def move(self, start, finish):
         # Clear out any old en passant pieces
@@ -92,12 +97,13 @@ class Chessboard():
 
         self.next_move = self.next_move.opposite()
 
-        print(self.board)
         # Find possible moves for the next player
-        self.find_all_moves()
+        total_moves = self.find_all_moves()
+        print("")
+        print(total_moves)
 
         # If there are no possible moves the game ends
-        if len(self.possible_moves) == 0:
+        if total_moves == 0:
             check = self.check_for_check(self.next_move)
 
             # Stalemate
@@ -111,6 +117,7 @@ class Chessboard():
                 else:
                     self.game_state = GameState.w_win
 
+        print(self.game_state)
         return self.game_state
 
     def construct_piece_binary_arrays(self):
