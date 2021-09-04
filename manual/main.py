@@ -6,6 +6,7 @@ OPT = 'qt'
 STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 game = Chessboard()
 fen_to_chessboard(game, STARTING_FEN)
+game.start()
 
 
 if OPT == 'tk':

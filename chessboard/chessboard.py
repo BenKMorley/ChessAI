@@ -1,6 +1,7 @@
 import numpy
 from chessboard.pieces.pieces import Piece, Colour, piece_moves
 from enum import Enum
+from copy import copy
 
 
 class GameState(Enum):
@@ -14,9 +15,34 @@ class GameState(Enum):
             return True
 
 
+class Move(object):
+    def __init__(self, start, finish, end_piece):
+        self.start = start
+        self.finish = finish
+        self.end_piece = end_piece
+        self.letters = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+    def __repr__(self):
+        i, j = self.start
+        i2, j2 = self.finish
+
+        print(f"{self.board[self.start]} from ", end='')
+        print(f"{self.letters[j]}{8 - i} to ", end='')
+        print(f"{self.letters[j2]}{8 - i2} becoming ", end='')
+        print(f"{self.end_piece}")
+
+    def __str__(self):
+        i, j = self.start
+        i2, j2 = self.finish
+
+        return f"{self.board[self.start]} from " + \
+               f"{self.letters[j]}{8 - i} to " +\
+               f"{self.letters[j2]}{8 - i2} becoming " +\
+               f"{self.end_piece}"
+
+
 class Chessboard():
     """Chessboard class encapsulates all game logic"""
-
     def __init__(self):
         # Define an array containing the names of all of the pieces
         self.board = numpy.full((8, 8), None, dtype=Piece)
@@ -31,13 +57,21 @@ class Chessboard():
         self.halfmove_clock = 0
         self.move_number = 0
 
+        # TO DO: Reconstruct code using self.moves_list instead
         self.possible_moves = numpy.zeros((8, 8), dtype=object)
         for i in range(8):
             for j in range(8):
                 self.possible_moves[i, j] = {}
 
+        self.moves_list = []
+
+    def start(self):
+        self.find_all_moves()
+        self.find_all_binary_arrays()
+
     def find_all_moves(self):
         total = 0
+        self.moves_list = []
 
         for i in range(8):
             for j in range(8):
@@ -60,6 +94,9 @@ class Chessboard():
                     if not check:
                         self.possible_moves[i, j][finish] = potential_moves[finish]
                         total += 1
+
+                        for final_piece in potential_moves[finish]:
+                            self.moves_list.append(Move((i, j), finish, final_piece))
 
         return total
 
@@ -117,7 +154,8 @@ class Chessboard():
                 else:
                     self.game_state = GameState.w_win
 
-        print(self.game_state)
+        # print(self.game_state)
+
         return self.game_state
 
     def construct_piece_binary_arrays(self):
@@ -131,20 +169,44 @@ class Chessboard():
           3: white rook
           4: white queen
           5: white king
-          6: black pawn
-          7: black knight
-          8: black bishop
-          9: black rook
-          10: black queen
-          11: black king
+          6: white pawn en-passant
+          7: black pawn
+          8: black knight
+          9: black bishop
+          10: black rook
+          11: black queen
+          12: black king
+          13: black pawn en-passant
         """
-        piece_array_binary = numpy.zeros((12, 8, 8))
+        piece_array_binary = numpy.zeros((14, 8, 8))
 
         for i in range(8):
             for j in range(8):
-                piece_array_binary[self.board[i, j].value, i, j] = 1
+                if self.board[i, j] is not None:
+                    piece_array_binary[self.board[i, j].value, i, j] = 1
 
         return piece_array_binary
+
+    def generate_potential_board_arrays(self):
+        total_moves = self.find_all_moves()
+
+        base = self.construct_piece_binary_arrays()
+
+        board_options = []
+        count = 0
+
+        for i in range(8):
+            for j in range(8):
+                for key in self.possible_moves[i, j]:
+                    finish_x, finish_y = key
+                    for piece in self.possible_moves[key]:
+                        start = copy(base)
+
+                        # Remove the piece at start
+                        start[self.board[i, j].value, i, j] = 0
+
+                        # Add the piece at the end
+                        start[piece.value, i, j] = 1
 
     def get_positions(self):
         return self.board
@@ -313,3 +375,24 @@ class Chessboard():
             j += 1
 
         return False
+
+    def find_all_binary_arrays(self):
+        binary_arrays = []
+
+        for move in self.moves_list:
+            # Save the old positions for later restoration
+            start_mem = self.board[move.start]
+            finish_mem = self.board[move.finish]
+
+            # Perform the move (note we are not checking here if the move is
+            # valid)
+            self.board[move.finish] = move.end_piece
+            self.board[move.start] = None
+
+            binary_arrays.append(self.construct_piece_binary_arrays())
+
+            # Restore pieces to their original positions
+            self.board[move.start] = start_mem
+            self.board[move.finish] = finish_mem
+
+        return binary_arrays

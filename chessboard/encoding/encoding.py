@@ -51,5 +51,5 @@ def fen_to_chessboard(game, fen_string):
     game.halfmove_clock = int(fen_components[4])
 
     game.move_number = int(fen_components[5])
-    game.find_all_moves()
+
     return game
