@@ -64,3 +64,12 @@ pip_library(
     name = "PyQt5-sip",
     version = "12.8.1",
 )
+
+pip_library(
+    name = "tensorflow",
+    version = "2.5.0",
+    deps = [
+        ":numpy",
+        ":six",
+    ],
+)
