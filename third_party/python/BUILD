@@ -310,5 +310,4 @@ pip_library(
         ":wheel",
         ":wrapt",
     ],
-    licences = ["MIT"],
 )
